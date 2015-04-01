@@ -1,5 +1,5 @@
-        subroutine create_bintree(a,b,q,eps,nmax,max_st,lnds_ch,
-     1                     lnds_cr,lnds_idst,chnodes,len_nds)
+        subroutine create_bintree(a,b,q,eps,nmax,max_lv,lvf,
+     1              lnds_ch,lnds_cr,lnds_idst,chnodes,len_nds)
 C-----------------------------------------------------------------------------
 C create a binary tree on which the initial condition u_init
 c is resolved by picewise chebyshev polynomials of order q
@@ -11,20 +11,27 @@ C   a and b: endpoints of the interval where everything is performed
 C   q: order of chebyshev approximation
 C   eps: self-explaining...
 C   nmax: maximum number of leaf nodes allowed
-C   max_st: maximum steps of refinement
+C   max_lv: maximum level of refinement
+c   lvf: integer, >=1, otherwise set to 1 
+c        force it to refine for (lvf-1) levels
+c        after resolving the required precision
 C
 C output:
 C   lnds_ch: Chebyshev coefficients of each leaf node
 C   lnds_cr(1): center of the node
 C   lnds_cr(2): radius of the node
 C   lnds_idst(1): index of the node, within all nodes of the tree
-C   lnds_idst(2): status of the node, 1 for resolved, 0 for unresolved 
+c.............................
+C   lnds_idst(2): status of the node, >0 for resolved, 0 for unresolved 
+c                 n for forced to refine for (n-1) times...
+c.............................
+c   lnds_idst(3): level of the node. 0 for root.
 C   chnodes: all the chebyshev nodes on [a,b]
 C   len_nds: length of the array of leaf nodes
 C-----------------------------------------------------------------------------
         implicit real*8 (a-h,o-z)
-        integer q,nmax,max_st,len_nds
-        integer lnds_idst(2,nmax)
+        integer q,nmax,max_lv,lvf,len_nds
+        integer lnds_idst(3,nmax)
         real*8 a,b,eps
         real*8 lnds_ch((q+1),nmax), lnds_cr(2,nmax)
         real*8 chnodes((q+1)*nmax)
@@ -36,12 +43,17 @@ C           lnds_pt: pointer to the current tail (not void) of the lnds arrays
 C           pointer to the current tail of the unresv arrays (not void)
         real*8 unresv_ch((q+1),nmax), unresv_cr(2,nmax),c,r
         real*8 kids_ch((q+1),2),kids_cr(2,2)
-        integer unresv_idst(2,nmax),p,stat,kids_idst(2,2)
-        integer i,j,k,step,l
+        integer unresv_idst(3,nmax),p,stat,kids_idst(3,2)
+        integer i,j,k,step,l,lv
 
         done=1.0d0        
         pi=4*atan(done)
 C--------------------------------------------------
+        if (lvf .lt. 1) then
+          lvf=1
+        endif
+c        check lvf, if not right, set to default
+c--------------------------------------------------
         lnds_pt=0
         unresv_pt=1
         do i=1,(q+1)
@@ -49,22 +61,30 @@ C--------------------------------------------------
         enddo
         unresv_idst(1,1)=0
         unresv_idst(2,1)=0
+        unresv_idst(3,1)=0
         unresv_cr(1,1)=0.5d0*(a+b)
         unresv_cr(2,1)=0.5d0*(b-a)
         step=0
 C         put the root node into the unresv stack
 
 C--------------------------------
-        do while((unresv_pt .gt. 0).and.(step .lt. max_st))
-C               attention: change the step constraint later!!!!
+        do while(unresv_pt .gt. 0)
+
+c          unresv contains 'unresolved' nodes
+c          here 'unresolved' means termination
+c          condition unsatisfied for any reason
+
           step=step+1
 C          write(*,*) 'step',step
           p=unresv_idst(1,unresv_pt)
           stat=unresv_idst(2,unresv_pt)
+          lv=unresv_idst(3,unresv_pt)
           c=unresv_cr(1,unresv_pt)
           r=unresv_cr(2,unresv_pt)
 C               read the last element of the unresv stack
-          if (stat .gt. 0) then
+
+c-------------------------------------------------------------
+          if (stat .ge. lvf) then
             lnds_pt=lnds_pt+1
 C               the first element in unresv is actually resolved, put it into the lnds arrays
 C               assign Chebyshev coefficients
@@ -74,6 +94,7 @@ C               assign Chebyshev coefficients
 C               assign index and status
             lnds_idst(1,lnds_pt)=unresv_idst(1,unresv_pt)
             lnds_idst(2,lnds_pt)=unresv_idst(2,unresv_pt)
+            lnds_idst(3,lnds_pt)=unresv_idst(3,unresv_pt)
 C               assign center and radius
             lnds_cr(1,lnds_pt)=unresv_cr(1,unresv_pt)
             lnds_cr(2,lnds_pt)=unresv_cr(2,unresv_pt)
@@ -82,15 +103,19 @@ C               assign center and radius
           unresv_pt=unresv_pt-1
 C               take away the first element from the stack
 
-          if (stat .le. 0) then
+c-------------------------------------------------------------
+
+          if (stat .lt. lvf) then
 C               the first element in unresv is indeed unresolved, subdivie it
-            call subdivide(p,c,r,q,eps,kids_ch,kids_cr,kids_idst)
+            call subdivide(p,c,r,q,lv,stat,eps,max_lv,
+     1                    kids_ch,kids_cr,kids_idst)
 C               put the two kids into the unresv stack, no matter they're resolved or not
 C               right kid first, left kid next
             do i=2,1,-1
               unresv_pt=unresv_pt+1
               unresv_idst(1,unresv_pt)=kids_idst(1,i)
               unresv_idst(2,unresv_pt)=kids_idst(2,i)
+              unresv_idst(3,unresv_pt)=kids_idst(3,i)
               unresv_cr(1,unresv_pt)=kids_cr(1,i)
               unresv_cr(2,unresv_pt)=kids_cr(2,i)
               do j=1,(q+1)
@@ -101,10 +126,11 @@ C               right kid first, left kid next
 
           endif 
 
+c-------------------------------------------------------------
 
 
 c       testing output...
-        write(*,*) 'unresv_pt=', unresv_pt
+c        write(*,*) 'unresv_pt=', unresv_pt
 c       end testing output...
 
         enddo
@@ -136,7 +162,8 @@ C-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
 
 
-        subroutine subdivide(p,c,r,q,eps,kids_ch,kids_cr,kids_idst)
+        subroutine subdivide(p,c,r,q,lv,st,eps,maxlv,
+     1             kids_ch,kids_cr,kids_idst)
 C-------------------------------------------------------------------------
 C subdivide the current node with
 
@@ -149,19 +176,20 @@ C kids_ch(j,i) : j-th Chebyshev coefficients of the i-th kid
 C kids_cr(1,i): center of the i-th kid
 C kids_cr(2,i): radius of the i-th kid
 C kids_idst(1,i): index of the i-th kid
-C kids_idst(2,i): status of the i-th kid, 1 for resolved, 0 for unresolved
+C kids_idst(2,i): status of the i-th kid, >0 for resolved, 0 for unresolved
+c                 n for forced to refine for (n-1) times. after resolving
+c                 to the prescribed precision
+c kids_idst(3,i): level of the i-th kid, 0 for root
 C-------------------------------------------------------------------------
         implicit real*8 (a-h,o-z)
-        integer p,q,kids_idst(2,2),pp,dir
+        integer p,q,maxlv,kids_idst(3,2),pp,dir
+        integer lv, llv, st, sst
         real*8 c,r,eps,kids_ch(q+1,2),kids_cr(2,2)
         real*8 x(q+1),u(q+1,q+1),v(q+1,q+1),whts(q+1)
         real*8 chebnodes(q+1),f(q+1)
         real*8 cheb(q+1)
 C--------------------------------------------------
-c       testing vars
-        real*8 l
-        integer Nlevel
-C--------------------------------------------------
+
         done=1.0d0
         pi=4*atan(done)
 
@@ -170,12 +198,16 @@ C--------------------------------------------------
         a=c-r
         b=c+r
         rr=r/2
-c       testing------
-        l=log(1.0d0/rr)/log(2.0d0)
-c        write(*,*) 'l=', l
-        Nlevel=ceiling(l)
-        write(*,*) 'subdivide-level=', Nlevel
-c       end testing------
+        llv=lv+1
+c.....................        
+        if (st .gt. 0) then
+          sst=st+1
+        else
+          sst=0
+        endif
+c         if resolved to eps, sst=st+1
+c          otherwise, leave it as unresolved first
+c.....................
         do i=1,2
           pp = 2*p + i;
           dir=2*i-3;
@@ -209,17 +241,36 @@ C          input: order q, function values f, output: chebyshev coefficients che
           kids_cr(1,i)=cc
           kids_cr(2,i)=rr
           kids_idst(1,i)=pp
-          kids_idst(2,i)=0
+          kids_idst(2,i)=sst
+c           attention! 
+          kids_idst(3,i)=llv
           tail=abs(cheb(q+1))
           epsuse = eps
-            if (2.ne.3) epsuse = eps/10
-            write(*,*) 'epsuse',epsuse 
-          if (tail .lt. epsuse) then
-            kids_idst(2,i)=1
+c            if (2.eq.3) epsuse = eps/10
+c            write(*,*) 'epsuse',epsuse 
+
+          if (sst .le. 0) then
+c           if marked as unresolved first,
+c            check the actual status of the node
+ 
+            if (tail .lt. epsuse) then
+              kids_idst(2,i)=1
+            elseif (llv .ge. maxlv) then
+c              terminate anyway, if level>maxlv, 
+c              when endpoints of interval become indistinguishable...
+c              the thrashing problem can be avoided now!!!!! 
+              write(*,*) 'warning: create_bintree-leaf node unresolved!'
+              write(*,*) 'hitting max level, terminate anyway!'
+              kids_idst(2,i)=1  
+            endif
+
           endif
-c          terminate anyway, if level>max_lv, 
-c          when endpoints of interval become indistinguishable...
-c          the thrashing problem can be avoided now!!!!! 
+
+c       testing------
+c        write(*,*) 'subdivide-level=', llv
+c        write(*,*) maxlv, (tail .lt. epsuse), (llv .ge. maxlv) 
+c       end testing------
+
         enddo
           
         end subroutine

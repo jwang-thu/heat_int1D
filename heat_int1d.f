@@ -25,7 +25,7 @@ c---------------------------------------------------
         real*8,external::u_bc0, u_bc1
 
 c  local variables
-        integer ntmax,ntf,nt,q,maxlf
+        integer ntmax,ntf,nt,q,maxlf,max_lv,lvf
         parameter(ntmax=100000)
         parameter(maxlf=2**12)
         parameter(q=16)
@@ -65,7 +65,9 @@ c----------------------------------------------------
 c set parameters...
         ntf=ceiling(tf/deltat)+1
         ep=1d-14
-        maxst=10000
+        max_lv=12
+        lvf=2
+c         set to 2, generally speaking
 	odr=q
 
 c----------------------------------------------------
@@ -85,8 +87,8 @@ c Step 1: t=deltat
 c 1.1: resolve u_init on a binary tree by piecewise Chebyshev polynomials
 c by calling create_bintree
 
-        call  create_bintree(a,b,q,ep,maxlf,maxst,lnds_ch,
-     1                    lnds_cr,lnds_idst,chnodes,len_nds)
+        call create_bintree(a,b,q,ep,maxlf,max_lv,lvf,
+     1       lnds_ch,lnds_cr,lnds_idst,chnodes,len_nds)
 
         len_chnds=len_nds*(q+1)
 c         length of all chebyshev nodes inside the domain
