@@ -1,0 +1,10 @@
+ALL: bintree_test
+
+
+bintree_test: u_icbc.o create_bintree2.o chebexps.o prini.o test_bintree.f
+
+
+	gfortran -o bintree_test $(FFLAGS) u_icbc.o create_bintree2.o chebexps.o prini.o test_bintree.f
+
+.f.o:
+	gfortran -c $(FFLAGS) $*.f
