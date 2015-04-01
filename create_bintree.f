@@ -89,7 +89,6 @@ C               put the two kids into the unresv stack, no matter they're resolv
 C               right kid first, left kid next
             do i=2,1,-1
               unresv_pt=unresv_pt+1
-C               be careful, hasn't been checked yet...
               unresv_idst(1,unresv_pt)=kids_idst(1,i)
               unresv_idst(2,unresv_pt)=kids_idst(2,i)
               unresv_cr(1,unresv_pt)=kids_cr(1,i)
@@ -101,6 +100,12 @@ C               be careful, hasn't been checked yet...
             enddo
 
           endif 
+
+
+
+c       testing output...
+        write(*,*) 'unresv_pt=', unresv_pt
+c       end testing output...
 
         enddo
 C--------------------------------
@@ -153,6 +158,10 @@ C-------------------------------------------------------------------------
         real*8 chebnodes(q+1),f(q+1)
         real*8 cheb(q+1)
 C--------------------------------------------------
+c       testing vars
+        real*8 l
+        integer Nlevel
+C--------------------------------------------------
         done=1.0d0
         pi=4*atan(done)
 
@@ -161,6 +170,12 @@ C--------------------------------------------------
         a=c-r
         b=c+r
         rr=r/2
+c       testing------
+        l=log(1.0d0/rr)/log(2.0d0)
+c        write(*,*) 'l=', l
+        Nlevel=ceiling(l)
+        write(*,*) 'subdivide-level=', Nlevel
+c       end testing------
         do i=1,2
           pp = 2*p + i;
           dir=2*i-3;
@@ -197,12 +212,14 @@ C          input: order q, function values f, output: chebyshev coefficients che
           kids_idst(2,i)=0
           tail=abs(cheb(q+1))
           epsuse = eps
-          write(*,*) 'epsuse',epsuse
-          if (2.ne.3) epsuse = eps*1000000
-          write(*,*) 'epsuse',epsuse 
+            if (2.ne.3) epsuse = eps/10
+            write(*,*) 'epsuse',epsuse 
           if (tail .lt. epsuse) then
             kids_idst(2,i)=1
-          endif 
+          endif
+c          terminate anyway, if level>max_lv, 
+c          when endpoints of interval become indistinguishable...
+c          the thrashing problem can be avoided now!!!!! 
         enddo
           
         end subroutine

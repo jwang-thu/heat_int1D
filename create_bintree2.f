@@ -247,7 +247,7 @@ c           attention!
           tail=abs(cheb(q+1))
           epsuse = eps
 c            if (2.eq.3) epsuse = eps/10
-            write(*,*) 'epsuse',epsuse 
+c            write(*,*) 'epsuse',epsuse 
 
           if (sst .le. 0) then
 c           if marked as unresolved first,

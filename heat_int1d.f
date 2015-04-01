@@ -32,7 +32,7 @@ c  local variables
         real*8 mu0(ntmax),mu1(ntmax),ep,t
 c  local-var: the bintree structure
         integer len_nds, maxst, odr, len_chnds
-        integer lnds_idst(2,maxlf)
+        integer lnds_idst(3,maxlf)
         real*8 lnds_ch(q+1,maxlf),lnds_cr(2,maxlf)
         real*8 chnodes((q+1)*maxlf)
 c local-var: split the bintree

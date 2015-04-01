@@ -23,7 +23,7 @@ C---------------------------------
         implicit real*8 (a-h,o-z)
         integer len_nds,nmax,odr,q,ntarg
         parameter(nmax=2**12)
-        integer lnds_idst(2,len_nds)
+        integer lnds_idst(3,len_nds)
         real*8 lnds_ch(odr+1,len_nds),lnds_cr(2,len_nds)        
         real*8 a,b,d,tol
         real*8 chnodes((odr+1)*len_nds)
@@ -116,7 +116,7 @@ c------------------------------------------
         implicit real*8 (a-h,o-z)
         integer len_nds, len_her, odr, ntarg
         real*8 lnds_ch(odr+1,len_nds), lnds_cr(2,len_nds)
-        integer lnds_idst(2,len_nds), ind_her(len_nds)
+        integer lnds_idst(3,len_nds), ind_her(len_nds)
         real*8 chnodes((odr+1)*len_nds)
         real*8 a,b,d,tol,xtarg(ntarg),gx(ntarg)
 c------------------------------------------
@@ -251,7 +251,7 @@ C---------------------------------
         integer len_nds,odr,q,nmax,len_dir
         real*8 lnds_ch(odr+1,nmax),lnds_cr(2,nmax)        
         real*8 a,b,x,d,gx
-        integer lnds_idst(2,nmax)
+        integer lnds_idst(3,nmax)
         integer ind_dir(len_dir)
 
         real*8 ends(2),mx(odr+1)
