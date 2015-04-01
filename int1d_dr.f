@@ -12,13 +12,18 @@ c              dt=7.8125d-5
 c
 c         1.4e-8 and 2.7e-8 when dt=0.0003125 (lvf=2)
 c               still good
-
+c
 c         7e-9 and 1.4e-8 when dt=1.5625d-04 (lvf=2)
 c           grows after that
 c       
 c          force it to refine spatial grid 
 c            one more time and see what happens (keep dt, lvf=3)
 c          6.4e-9 and 1.3e-8 
+c
+c          force it to refine spatial grid 
+c            one more time and see what happens (keep dt, lvf=4)
+c          6.4e-9 and 1.3e-8
+c                 no longer the problem of create_bintree
 c
 c
 c       Problems:
