@@ -59,6 +59,9 @@ c       split the leaf nodes into two parts
 c       according to their radii and rs
         call split_bintree(lnds_cr,len_nds,rs,ind_dir,len_dir
      1                          ,ind_her,len_her)
+c
+c       testing output:
+        write(*,*) 'len_dir=', len_dir, 'len_her=', len_her
 
 C----------------------------------
 
@@ -141,6 +144,7 @@ c              for chebexps
         natoms=(odr+1)*len_her
 c              number of sources (atoms, as they call them)
         lenw=maxwrk
+
 c------------------------------------------
 c       first, go through the ind_her list, assemble their chebnodes
 c              and compute str(i)=f(y_i)*w_i

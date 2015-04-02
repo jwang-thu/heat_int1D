@@ -8,8 +8,11 @@
         real*8,external::norm_inf
 
 	deltat=1.5625d-04
-c              dt=7.8125d-5
+c              deltat=0.0003125d0
+c              deltat=1.5625d-04
+c              deltat=7.8125d-5
 c
+c----------------------------------------------------------------------------------------
 c         1.4e-8 and 2.7e-8 when dt=0.0003125 (lvf=2)
 c               still good
 c
@@ -27,6 +30,8 @@ c                 no longer the problem of create_bintree
 c
 c
 c       Problems:
+c
+c        spatial resolution:
 c         0. different performance on different computers? :(
 c            unable to achieve tail<1e-15 on a cims desktop
 c            works on my laptop though.
@@ -38,6 +43,7 @@ c         1. criterion for 'resolving the initial data by a piecewise Chebyshev 
 c            tail indicates error, but...
 c
 c         2. study the accuracy and stability of cfgt_herm and cfgt_dir
+c----------------------------------------------------------------------------------------
 
 	dx=0.01d0
 
