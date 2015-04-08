@@ -61,7 +61,7 @@ c       according to their radii and rs
      1                          ,ind_her,len_her)
 c
 c       testing output:
-        write(*,*) 'len_dir=', len_dir, 'len_her=', len_her
+c        write(*,*) 'len_dir=', len_dir, 'len_her=', len_her
 
 C----------------------------------
 

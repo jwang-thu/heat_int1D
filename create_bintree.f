@@ -298,6 +298,7 @@ c         ind_her: hermite part (small intervals)
         len_her=0
 
 c        thrs=rs
+c        attention here!!!!
         thrs=0.5*rs
 
         do j=1,len_nds

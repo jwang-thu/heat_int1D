@@ -8,7 +8,7 @@
 c------------------------------------------------------
 c        test the create_bintree subroutine
 c         eps should >= 1d-14
-
+        open(unit=12,file='bintree_test.dat')
 C------------------------------------------------------
         a=-0.1d0
         b=1.1d0
@@ -55,7 +55,9 @@ c        write(*,*) lnds_ch(1:q+1,1)
           write(*,*) 'nodes', i, 
      1               '[',ea,',',eb,']',',',
      1           lnds_ch(1:q+1,i), lnds_idst(2,i), lnds_idst(3,i)
-          write(*,*)  
+          write(*,*) 
+          write(12,*) ea 
         enddo
+        write(12,*) eb
         
         end program

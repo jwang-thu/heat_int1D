@@ -1,16 +1,23 @@
         program int1d_dr
+
+c-------------------------------------------------
+c       driver code for heat_int1D
+c-------------------------------------------------
         implicit real*8 (a-h,o-z)
 	integer nmax
 	parameter(nmax=300)
 	real*8 xx(nmax), u(nmax), u_ext(nmax)
         real*8 err(nmax), err_abs, err_rel
-	real*8 tf,x0,x1,a,b,deltat
+	real*8 x0,x1,a,b,deltat
         real*8,external::norm_inf
+
+        real*8 tf(30)
 
 	deltat=1.5625d-04
 c              deltat=0.0003125d0
 c              deltat=1.5625d-04
 c              deltat=7.8125d-5
+        open(unit=13,file='errors.dat')
 c
 c----------------------------------------------------------------------------------------
 c         1.4e-8 and 2.7e-8 when dt=0.0003125 (lvf=2)
@@ -59,25 +66,41 @@ c-------------------------------------------------------------------------------
 
 
 
-	tf=0.3d0
+c	tf=0.3d0
 c         test
+        do i=1,30
+c-----------------------
+          tf(i)=i*deltat       
 
-	call heat_int1d(xx,nx,tf,x0,x1,a,b,deltat,u)
+	  call heat_int1d(xx,nx,tf(i),x0,x1,a,b,deltat,u)
 
-        do k=1,nx
-          call u_exact(xx(k),tf,u_ext(k))
-          err(k)=u(k)-u_ext(k)
-        enddo
+          do k=1,nx
+            call u_exact(xx(k),tf(i),u_ext(k))
+            err(k)=u(k)-u_ext(k)
+          enddo
 
-        write(*,*) 'absolute error: ', norm_inf(err,nx)
-        write(*,*) 'relative error:', 
+          write(*,*) 'tf=', tf(i)
+          write(*,*) 'absolute error: ', norm_inf(err,nx)
+          write(*,*) 'relative error:', 
+     1           norm_inf(err,nx)/norm_inf(u_ext,nx)
+
+          write(13, *) norm_inf(err,nx),
      1         norm_inf(err,nx)/norm_inf(u_ext,nx)
+
+c-----------------------
+        enddo
 
 
 
 
 
         end program
+
+
+
+
+
+
 
 c---------------------------------
         subroutine u_exact(x,t,res)
